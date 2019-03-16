@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2019/3/14 17:03
 # @Author  : Noel
-# @Site    : 
+# @Site    :
 # @File    : BaseModel.py
 # @Software: PyCharm
 
@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import xlwings
 import plotly
+
 
 class BaseModel:
 
@@ -40,12 +41,47 @@ class BaseModel:
         Users_Debus = List   Ｄｔｊ 一 一从车站 i,上车到 j． 下车客流量,单位:人 ;
         Train_Marshalling_Cars =   列车编组辆数
         Train_Door_Number=  列车每节车厢车门数
+        Pure_Train Travel_Time = 列车途中纯运行时间
+        Train_Stops_Station_Time = ST 列车在车站停留时间
+        Sum_Times_Of_Each_Interval = 列车从S1-Sn沿途运行时间之和
+        Pick_Up_Time= 乘客人均上车时间
+
 
         """
+        self.Q = (pd.read_excel('C://Users/Noel/OneDrive/文档/李涵论文/列车运行数据.xlsx',sheet_name=0))
+        self.Weight_Wait_table = pd.DataFrame([[0, 1, 32, 10, 25, 35, 9, 3125.3, 187.4],
+                                          [0.1, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.2, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.3, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.4, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.5, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.6, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.7, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.8, 1, 32, 10, 5, 35, 10, 2507.2, 150.4],
+                                          [0.9, 1, 32, 8, 5, 35, 8, 1680.6, 100.8],
+                                          [1, 1, 32, 8, 5, 35, 8, 1680.6, 100.8]
+                                          ], columns=['权重', '主线折返Start', '主线折返End', 'f1', '支线折返Start', '支线折返End', 'f2',
+                                                      '候车时间(小时)', '平均候车时间(秒)'])
+
+        self.Weight_Run_distance = pd.DataFrame([[0, 2263, 26416.4],
+                                            [0.1, 2146, 25597.2],
+                                            [0.2, 2146, 25597.2],
+                                            [0.3, 2146, 25597.2],
+                                            [0.4, 2146, 25597.2],
+                                            [0.5, 2146, 25597.2],
+                                            [0.6, 2146, 25597.2],
+                                            [0.7, 2146, 25597.2],
+                                            [0.8, 2146, 25597.2],
+                                            [0.9, 2838, 24696.1],
+                                            [1, 2838, 24696.1]
+                                            ], columns=['权重', '列车行走距离', '乘客出行时间(小时)'])
+        self.Decisoin_Variable_i_j_1 = np.random.randint(0, 2, size=(18, 18))
+        self.Decisoin_Variable_i_j_2 = np.random.randint(0, 2, size=(18, 18))
         pass
 
-
-    def User_Travel_Time_All(self):
+    def User_Travel_Time_All(self,
+                             Departure_Frequency_=5
+                             ):
         """
         Desc:
             城市轨道交通乘客出行时间Ｚ，由乘客候车时间ＣＦ、乘客在车时间ＣＫ和乘客换乘时间ＣＴ构成。
@@ -53,8 +89,59 @@ class BaseModel:
             乘客在车时间等于乘客途径区间列车的区间运行时间和列车停站时间之和与客流量的乘积，列车区间运行时间和列车停站时间为固定值。
             乘客换乘时间为乘客换乘走行时间和换乘等待时间之和，与交路折返位置和发车频率有关。乘客出行时间可以表示为：
             ＺＸ＝ ＣＷ＋ ＣＶ＋Ｃ
+            Qij:客流量
+            T :
+            Decisoin_Variable_i_j :从i到j的决策变量
+            Departure_Frequency_ 交车 : 发出频率
         """
 
-    def User_Travel_Wailt_Time(self):
+        np.array(self.Q) / (
+                    2 * (
+                (np.random.randint(0, 2, size=(18, 18))) * Departure_Frequency_ + (np.random.randint(0, 2, size=(18, 18)) * Departure_Frequency_)))
+
+    def User_Travel_Wailt_Time(self,
+                               Time_i_j):
+        """
+        ＣＶ＝ＣＶＲ＋ＳＴ
+        Time_i_j : 列车重i-j的运行时间，为一个矩阵
+        """
+
+        CVR = self.Q * Time_i_j
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
