@@ -183,6 +183,18 @@ class modle():
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]])
 
+        """
+        Desc:
+            L:
+                L_1 = 48657
+                L_2 = 43612
+                L_3 = 13495
+        type:
+            1.
+                L1 = 48657,L2 = 43612
+            2.
+                L1 = 48657 L2 = 13495
+        """
         self.depart_fre = 5  # 发车频率
         self.D = 1.53  # 乘客人均上车时间
 
@@ -199,18 +211,31 @@ class modle():
                      R_1=None,
                      R_2=None,
                      BETA=None,
-                     F_H=None
+                     F_H=None,
+                     L1 = None,
+                     L2 = None
                      ):
         """
         乘客出行时间 Z1
         乘客候车时间CW、乘客乘车时间CV以及乘客在站台的换乘时间CT构成
         Z1 = CW+ CV + CT
+
+        Args:
+            L:
+                L_1 = 48657
+                L_2 = 43612
+                L_3 = 13495
+            type:
+                1.
+                    L1 = 48657,L2 = 43612
+                2.
+                    L1 = 48657 L2 = 13495
         """
         # CW乘客候车时间
         CW = (np.array(self.Q) * 3600) / 2 * \
             ((R_1 * self.depart_fre) + (R_2 * self.depart_fre))
         CW_sum = np.sum(CW)
-        print(str(CW_sum))
+        print("CW:" + str(CW_sum))
 
         # CV 乘客在车时间
         Tij = self.Tij.fillna(0)
@@ -233,7 +258,7 @@ class modle():
 
         # 乘客候车时间CW, 乘客在车时间CV，乘客换乘时间CT
         CV = CVR + ST
-        print(str(CV))
+        print("CV:" + str(CV))
 
         # 乘客换乘时间
         Time = (3600 / (2 * self.depart_fre)) + self.T0
@@ -242,3 +267,97 @@ class modle():
         # 乘客在站台的换乘时间CT
         CT = np.sum(np.array(CT_I_J) * np.array(self.Q))
         print(str(CT))
+
+        Z1 = CW_sum + CV + CT
+        print('乘客出行时间Z1')
+        print("Z1:" + str(Z1 ))
+        Z_2 = self.depart_fre * L1 + self.depart_fre * L2
+        print()
+        print("Z_2:" + str(Z_2))
+
+
+
+
+    def Constraint_Condition_Operation(self,
+
+                                       BETA_1 = None,
+                                       BETA_2=None,
+                                       F_H_1 = None,
+                                       F_H_2 = None
+                                       ):
+        """
+            Desc:
+            在满足乘客出行需求的情况下，城市轨道交通还应关注服务水平的提高，列车过度拥挤会影响乘客乘坐的舒适性。
+            为保证乘客乘坐的舒适性，对任意区间K的满载率αk必须小于满载率上限η，约束条件1为：
+
+            当输入参数为
+                BETA:
+                    1.最大满载率的要求
+                    BETA_1  = BETA_1
+                    BETA_2 = BETA_1
+                    2.最大满载率的要求
+                    BETA_1  = BETA_2
+                    BETA_2 = BETA_2_1
+        """
+
+        # 对任意区间K的满载率αk必须小于满载率上限η
+
+        AK = ((np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_1)/(F_H_1 * self.C_Z)) + (
+                np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_2/(F_H_2 * self.C_Z))
+        print('最大满载率')
+        print(str(AK))
+
+        # 在城市轨道交通中，两列前后追踪运行的列车，运行途中相互不干扰的最小时间间隔称作最小追踪间隔，是决定城市轨道交通线路能力的重要因素之一。
+        # 对于Y型线路来说，当支线与主线直通运营时，约束条件２为：
+        # T = 3600
+        # fn<= T/1min
+
+        # 当支线独立运营时，约束条件2为：
+        # f1 <= T/1min
+        # f2 <= T/1min
+
+
+        # 满足折返站折返能力
+        # 列车折返车站的折返能力是全线线路通过能力的重要影响因素，中间折返站的折返能力通常会成为整条线路通过能力的瓶颈。
+        # 故每条交路的发车频率要与其两端的折返站的折返能力相适应。约束条件3为：
+        # Fh <= T/t折
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
