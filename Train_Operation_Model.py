@@ -275,6 +275,7 @@ class modle():
         print()
         print("Z_2:" + str(Z_2))
 
+
     def Constraint_Condition_Operation(self,
 
                                        BETA_1=None,
