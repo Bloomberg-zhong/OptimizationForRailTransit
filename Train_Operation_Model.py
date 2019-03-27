@@ -212,8 +212,8 @@ class modle():
                      R_2=None,
                      BETA=None,
                      F_H=None,
-                     L1 = None,
-                     L2 = None
+                     L1=None,
+                     L2=None
                      ):
         """
         乘客出行时间 Z1
@@ -270,20 +270,17 @@ class modle():
 
         Z1 = CW_sum + CV + CT
         print('乘客出行时间Z1')
-        print("Z1:" + str(Z1 ))
+        print("Z1:" + str(Z1))
         Z_2 = self.depart_fre * L1 + self.depart_fre * L2
         print()
         print("Z_2:" + str(Z_2))
 
-
-
-
     def Constraint_Condition_Operation(self,
 
-                                       BETA_1 = None,
+                                       BETA_1=None,
                                        BETA_2=None,
-                                       F_H_1 = None,
-                                       F_H_2 = None
+                                       F_H_1=None,
+                                       F_H_2=None
                                        ):
         """
             Desc:
@@ -302,8 +299,8 @@ class modle():
 
         # 对任意区间K的满载率αk必须小于满载率上限η
 
-        AK = ((np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_1)/(F_H_1 * self.C_Z)) + (
-                np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_2/(F_H_2 * self.C_Z))
+        AK = ((np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_1) / (F_H_1 * self.C_Z)) + (
+            np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_2 / (F_H_2 * self.C_Z))
         print('最大满载率')
         print(str(AK))
 
@@ -316,48 +313,7 @@ class modle():
         # f1 <= T/1min
         # f2 <= T/1min
 
-
         # 满足折返站折返能力
         # 列车折返车站的折返能力是全线线路通过能力的重要影响因素，中间折返站的折返能力通常会成为整条线路通过能力的瓶颈。
         # 故每条交路的发车频率要与其两端的折返站的折返能力相适应。约束条件3为：
         # Fh <= T/t折
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
