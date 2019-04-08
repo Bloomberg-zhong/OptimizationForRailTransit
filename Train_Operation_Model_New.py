@@ -58,7 +58,7 @@ class modle():
 
     # 乘客候车时间CW
     def Passenger_Waiting_Time(self,
-                       ):
+                               ):
         """
             CW :计算方式
             0< x <8 # 0到X的 8的随机
@@ -76,12 +76,12 @@ class modle():
 
         return CW
 
-
     # 乘客乘车时间CV,
     # CV = CVR + ST
+
     def Passenger_Travel_Time(self,
-                        K: None
-                        ):
+                              K: None
+                              ):
         """
         CV
         """
@@ -115,18 +115,10 @@ class modle():
         CV = CVR + ST
         print("CV:" + str(CV))
 
-
-
     # 乘客在站台的换乘时间CT构成。
+
     def Passenger_Transfer_Time(self):
 
         # 乘客在站台的换乘时间CT
         CT = np.sum(np.array(self.CT_I_J) * np.array(self.P))
         print(str(CT))
-
-
-
-
-
-
-
