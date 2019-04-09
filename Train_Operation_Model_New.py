@@ -60,12 +60,12 @@ class modle():
     def Passenger_Waiting_Time(self,
                                ):
         """
+            Desc:
+                对乘客出行时间 进行分析
+                Z1 = CW + CV + CT
             CW :计算方式
             0< x <8 # 0到X的 8的随机
-        :param x:
-        :return:
         """
-
         CW1 = (self.h1 / 2) * (np.sum(np.array(self.P.iloc[0:self.x, 0:12]))) + (
             ((self.h1 + self.h2) / 2) - self.G) * np.sum(np.array(self.P.iloc[0:self.x, 12:]))
         CW2 = (((self.h1 + self.h2) / 2) - self.G) * np.sum(np.array(self.P.iloc[self.x:8, self.x:8])) + (self.h1 / 2) * np.sum(
@@ -76,14 +76,13 @@ class modle():
 
         return CW
 
-    # 乘客乘车时间CV,
-    # CV = CVR + ST
-
     def Passenger_Travel_Time(self,
                               K: None
                               ):
         """
-        CV
+            Desc:
+                乘客乘车时间CV
+                CV = CVR + ST
         """
         # 乘客乘车时间由途中纯运行时间CVR
         CVR = np.sum(np.array(self.P) * self.Tij)
@@ -114,11 +113,13 @@ class modle():
         # 乘客候车时间CW, 乘客在车时间CV，乘客换乘时间CT
         CV = CVR + ST
         print("CV:" + str(CV))
-
-    # 乘客在站台的换乘时间CT构成。
+        return CV, CVR
 
     def Passenger_Transfer_Time(self):
-
+        """
+        Desc:
+            乘客在站台的换乘时间CT
+        """
         # 乘客在站台的换乘时间CT
         CT = np.sum(np.array(self.CT_I_J) * np.array(self.P))
         print(str(CT))
