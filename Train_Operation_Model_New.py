@@ -21,7 +21,7 @@ else:
 
 class modle():
     def __init__(self,
-                 X: 5,
+                 x: 5,  # 5< = x <=24
                  f1: 5,
                  f2: 5,
                  G: None
@@ -31,7 +31,7 @@ class modle():
         self.P = P.iloc[:, 1:]
 
         # 列车每个区间间隔距离与运行时间
-        pd.read_excel(data_file_path, sheet_name=1)
+        self.The_Train_Miles = pd.read_excel(data_file_path, sheet_name=1)
 
         # 列车上下车流量数据
         Train_Values_of_Float = pd.read_excel(
@@ -53,10 +53,40 @@ class modle():
         self.h1 = 1 / f1  # 主线交路的发车间隔（时间）
         self.f2 = f2  # 支线交路的开行频率 （对数）
         self.h2 = 1 / f2  # 支线交路的发车间隔（时间）
-        self.G = G  # 大小交路发车间隔
-        self.x = X
+
+        if 0.05 <= G and G <= 0.15:
+            self.G = G  # 大小交路发车间隔
+        else:
+            return u'G的值需要在约束条件中。。。'
+        self.x = x
+
+    def Constraint(self, K):
+        """
+        K  = 满载率αk
+        """
+        C_Z = 800  # 列车固定人员数
+        if K < self.x:
+            FH = self.f1
+
+        elif 8 <= K and K <= 12:
+            FH = self.f1
+
+        elif 12 < K and K <= 18:
+            FH = self.f2
+        else:
+            # 当K>X的时候，
+            FH = (self.f1 + self.f2) / 2
+
+        if self.x == 0:
+            self.f1 + self.f2 <= 24
+        if self.x == 7:
+            self.f1 > 5
+            self.f2 > 5
+            self.f1 <= 24
+            self.f2 <= 24
 
     # 乘客候车时间CW
+
     def Passenger_Waiting_Time(self,
                                ):
         """
@@ -80,6 +110,9 @@ class modle():
                               K: None
                               ):
         """
+        K: 非换成节点
+        X: 换成节点
+        当8<=K<=12:
             Desc:
                 乘客乘车时间CV
                 CV = CVR + ST
@@ -96,6 +129,12 @@ class modle():
         # 当K<X的时候，
         if K < self.x:
             FH = self.f1
+
+        elif 8 <= K and K <= 12:
+            FH = self.f1
+
+        elif 12 < K and K <= 18:
+            FH = self.f2
         else:
             # 当K>X的时候，
             FH = (self.f1 + self.f2) / 2
@@ -123,3 +162,13 @@ class modle():
         # 乘客在站台的换乘时间CT
         CT = np.sum(np.array(self.CT_I_J) * np.array(self.P))
         print(str(CT))
+
+    def The_Train_Goes_Miles(self, L_2):
+        L_1 = 48657
+        if 0 <= self.x and self.x <= 7:
+            pass
+        else:
+            return u'x被限制在0-7之间！！！'
+
+        L_2 = self.The_Train_Miles.iloc[self.x:7, 3:4].sum().values[0] \
+            + self.The_Train_Miles.iloc[11:17, 3:4].sum().values[0]
