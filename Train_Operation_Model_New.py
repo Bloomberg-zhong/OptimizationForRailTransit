@@ -14,12 +14,13 @@ import xlwings
 ismac = False
 
 if ismac:
-    data_file_path = '/Users/zhongpengbo/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    # data_file_path = '/Users/zhongpengbo/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    data_file_path = '列车运行数据.xlsx'
 else:
-    data_file_path = 'C:/Users/Noel/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    # data_file_path = 'C:/Users/Noel/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    data_file_path = '列车运行数据.xlsx'
 
-
-class modle():
+class Train_Model():
     def __init__(self,
                  x: 5,  # 5< = x <=24
                  f1: 5,
@@ -171,6 +172,8 @@ class modle():
 
     def The_Train_Goes_Miles(self,):
         L_1 = 48657
+        print('列车长度L1')
+        print("L_1:" + str(L_1))
         if 0 <= self.x and self.x <= 7:
             pass
         else:
@@ -180,17 +183,29 @@ class modle():
             + self.The_Train_Miles.iloc[11:17, 3:4].sum().values[0]
         print('列车长度L2')
         print("L_2:" + str(L_2))
-        return L_1, L_2
+        Z2 = L_1 + L_2
+        print('列车出行时间Z2')
+        print("Z2:" + str(Z2))
 
+        return Z2
+
+    def All_Return(self):
+        CW = self.Passenger_Waiting_Time()
+        CV, CVR = self.Passenger_Travel_Time()
+        CT = self.Passenger_Transfer_Time()
+        Z2 = self.The_Train_Goes_Miles()
+        return CW , CV, CVR, CT, Z2
 
 if __name__ == '__main__':
-    M = modle(
+    from Train_Operation_Model_New import Train_Model
+    M = Train_Model(
         x=6,
         f1=6,
         f2=6,
         G=0.05,
         K=5
     )
+    M.All_Return
     # M.Passenger_Waiting_Time()
 #     M.Passenger_Travel_Time()
 #     M.Passenger_Transfer_Time()
