@@ -172,8 +172,9 @@ class Train_Model():
 
     def The_Train_Goes_Miles(self,):
         L_1 = 48657
-        print('列车长度L1')
-        print("L_1:" + str(L_1))
+        L_1_time = self.f1 * L_1
+        print('列车长度L1的时间')
+        print("L_1:" + str(L_1_time))
         if 0 <= self.x and self.x <= 7:
             pass
         else:
@@ -181,9 +182,10 @@ class Train_Model():
 
         L_2 = self.The_Train_Miles.iloc[self.x:7, 3:4].sum().values[0] \
             + self.The_Train_Miles.iloc[11:17, 3:4].sum().values[0]
-        print('列车长度L2')
-        print("L_2:" + str(L_2))
-        Z2 = L_1 + L_2
+        print('列车长度L2的时间')
+        L_2_time = self.f2 * L_2
+        print("L_2:" + str(L_2_time))
+        Z2 = L_1_time + L_2_time
         print('列车出行时间Z2')
         print("Z2:" + str(Z2))
 
