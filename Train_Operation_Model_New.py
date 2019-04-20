@@ -14,15 +14,17 @@ import xlwings
 ismac = False
 
 if ismac:
-    # data_file_path = '/Users/zhongpengbo/OneDrive/文档/李涵论文/列车运行数据.xlsx'
-    data_file_path = '列车运行数据.xlsx'
+    data_file_path = '/Users/zhongpengbo/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    # data_file_path = '列车运行数据.xlsx'
 else:
     # data_file_path = 'C:/Users/Noel/OneDrive/文档/李涵论文/列车运行数据.xlsx'
-    data_file_path = '列车运行数据.xlsx'
+    data_file_path = 'D:/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+
+    # data_file_path = '列车运行数据.xlsx'
 
 class Train_Model():
     def __init__(self,
-                 x: 5,  # 5< = x <=24
+                 x: 5,  # 0< = x <=7
                  f1: 5,
                  f2: 5,
                  G: None,
@@ -67,21 +69,21 @@ class Train_Model():
             raise Exception('G的值需要在约束条件中0.05<=G<=0.15')
 
         if self.x == 0:
-            if self.f1 + self.f2 <= 24:
+            if self.f1 + self.f2 >= 24:
                 raise Exception(u'错误:当x=0 '
                                 u'\tf1 + f2 <= 24')
 
         if self.x == 7:
-            if self.f1 > 5:
+            if self.f1 < 5:
                 raise Exception(u'错误:当x=7'
                                 u'\tf1>5')
-            if self.f2 > 5:
+            if self.f2 < 5:
                 raise Exception(u'错误:当x=7'
                                 u'\tf2>5')
-            if self.f1 <= 24:
+            if self.f1 >= 24:
                 raise Exception(u'错误:当x=7'
                                 u'\tf1<=24')
-            if self.f2 <= 24:
+            if self.f2 >= 24:
                 raise Exception(u'错误:当x=7'
                                 u'\tf2<=24')
 
