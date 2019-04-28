@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2019/3/26 14:43
+# @Time    : 2019/4/8 15:02
 # @Author  : Noel
 # @Site    :
-# @File    : Train_Operation_Model.py
+# @File    : Train_Operation_Model_New.py
 # @Software: PyCharm
 
 import os
@@ -14,19 +14,28 @@ import xlwings
 ismac = False
 
 if ismac:
-    data_file_path = '/Users/zhongpengbo/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    # data_file_path = '/Users/zhongpengbo/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    data_file_path = '列车运行数据.xlsx'
 else:
-    data_file_path = 'C:/Users/Noel/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    # data_file_path = 'C:/Users/Noel/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    # data_file_path = 'D:/OneDrive/文档/李涵论文/列车运行数据.xlsx'
+    data_file_path = '列车运行数据.xlsx'
 
 
-class modle():
-    def __init__(self):
+class Train_Model():
+    def __init__(self,
+                 x: 5,  # 0< = x <=7
+                 f1: 5,
+                 f2: 5,
+                 G: None,
+                 K: None
+                 ):
         # Q 为列车流量
-        Q = (pd.read_excel(data_file_path, sheet_name=0, index_col=0))
-        self.Q = Q.iloc[:, 1:]
+        P = (pd.read_excel(data_file_path, sheet_name=0, index_col=0))
+        self.P = P.iloc[:, 1:]
 
         # 列车每个区间间隔距离与运行时间
-        pd.read_excel(data_file_path, sheet_name=1)
+        self.The_Train_Miles = pd.read_excel(data_file_path, sheet_name=1)
 
         # 列车上下车流量数据
         Train_Values_of_Float = pd.read_excel(
@@ -40,280 +49,203 @@ class modle():
 
         #  从车站i到j途经各区间的运行时间之和
         Tij = pd.read_excel(data_file_path, sheet_name=3, index_col=0)
-        self.Tij = Tij .iloc[:, 1:]
+        self.Tij = Tij .iloc[:, 1:].fillna(0)
 
-        CT_I_J = pd.read_excel(data_file_path, sheet_name=5, index_col=0)
-        self.CT_I_J = CT_I_J.iloc[:, 1:]
-
-        # R1 R2 分别为0-1的决策变量
-        self.R1 = np.array([[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                            ])
-
-        self.R2 = np.array(
-            [[0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-             ])
-
-        self.R2_1 = np.array(
-            [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-             ])
-
-        self.BETA_1 = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    1, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-
-        self.BETA_2 = np.array(
-            [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]])
-
-        self.BETA_2_1 = np.array(
-            [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]])
-
-        """
-        Desc:
-            L:
-                L_1 = 48657
-                L_2 = 43612
-                L_3 = 13495
-        type:
-            1.
-                L1 = 48657,L2 = 43612
-            2.
-                L1 = 48657 L2 = 13495
-        """
-        self.depart_fre = 5  # 发车频率
-        self.D = 1.53  # 乘客人均上车时间
-
-        self.V = 4  # 列车编组量数
-        self.N_V = 4  # 列车每节车厢门数
-
-        self.F_H_1 = 5  # 列车1交路发车频率
-        self.F_H_2 = 5  # 列车2交路发车频率
-        self.ST_0 = 17  # 开门时间
-        self.T0 = 15   #
+        self.f1 = f1  # 主线交路的开行频率 （对数）
+        self.h1 = 1 / f1  # 主线交路的发车间隔（时间）
+        self.f2 = f2  # 支线交路的开行频率 （对数）
+        self.h2 = 1 / f2  # 支线交路的发车间隔（时间）
         self.C_Z = 800  # 列车固定人员数
-
-    def Waiting_Time(self,
-                     R_1=None,
-                     R_2=None,
-                     BETA=None,
-                     F_H=None,
-                     L1=None,
-                     L2=None
-                     ):
+        self.T0 = 15
+        self.K = K
+        self.x = x
         """
-        乘客出行时间 Z1
-        乘客候车时间CW、乘客乘车时间CV以及乘客在站台的换乘时间CT构成
-        Z1 = CW+ CV + CT
-
-        Args:
-            L:
-                L_1 = 48657
-                L_2 = 43612
-                L_3 = 13495
-            type:
-                1.
-                    L1 = 48657,L2 = 43612
-                2.
-                    L1 = 48657 L2 = 13495
+        K  = 满载率αk
         """
-        # CW乘客候车时间
-        CW = (np.array(self.Q) * 3600) / 2 * \
-            ((R_1 * self.depart_fre) + (R_2 * self.depart_fre))
-        CW_sum = np.sum(CW)
-        print("CW:" + str(CW_sum))
+        if 0.05 <= G and G <= 0.15:
+            self.G = G  # 大小交路发车间隔
+            print("G的范围合理！G:" + str(G))
+        else:
+            raise Exception('G的值需要在约束条件中0.05<=G<=0.15')
 
-        # CV 乘客在车时间
-        Tij = self.Tij.fillna(0)
-        Tij = np.array(Tij)
+        if self.x == 0:
+            if self.f1 + self.f2 >= 24:
+                raise Exception(u'错误:当x=0 '
+                                u'\tf1 + f2 <= 24')
 
-        # 乘客乘车时间由途中纯运行时间CVR
-        CVR = np.sum(np.array(self.Q) * Tij)
+        if self.x == 7:
+            if self.f1 < 5:
+                raise Exception(u'错误:当x=7'
+                                u'\tf1>5')
+            if self.f2 < 5:
+                raise Exception(u'错误:当x=7'
+                                u'\tf2>5')
+            if self.f1 >= 24:
+                raise Exception(u'错误:当x=7'
+                                u'\tf1<=24')
+            if self.f2 >= 24:
+                raise Exception(u'错误:当x=7'
+                                u'\tf2<=24')
 
-        # 交路1的每列列车在车站K的停站时间——1
-        ST_H_K_ave_1 = pd.DataFrame(
-            (np.array(self.ak) * self.D) / (self.V * self.N_V * BETA * F_H) + self.ST_0)
+        if self.K < self.x:
+            self.FH = self.f1
 
-        # ST_0列车在车站开关门时间
-        ST_K = (BETA * (np.array(self.Train_Values_of_Float)
-                        [:, 2:3])) * ST_H_K_ave_1
-        ST_K = np.sum(ST_K)
+        elif 8 <= self.K and self.K <= 12:
+            self.FH = self.f1
 
-        # ST列车在车站停留时间
-        ST = sum(ST_K)
+        elif 12 < self.K and self.K <= 18:
+            self.FH = self.f2
 
-        # 乘客候车时间CW, 乘客在车时间CV，乘客换乘时间CT
-        CV = CVR + ST
-        print("CV:" + str(CV))
+        else:
+            # 当K>X的时候，
+            self.FH = (self.f1 + self.f2) / 2
 
-        # 乘客换乘时间
-        Time = (3600 / (2 * self.depart_fre)) + self.T0
-        CT_I_J = self.CT_I_J.replace('A', Time)
-
-        # 乘客在站台的换乘时间CT
-        CT = np.sum(np.array(CT_I_J) * np.array(self.Q))
-        print(str(CT))
-
-        Z1 = CW_sum + CV + CT
-        print('乘客出行时间Z1')
-        print("Z1:" + str(Z1))
-        Z_2 = self.depart_fre * L1 + self.depart_fre * L2
-        print()
-        print("Z_2:" + str(Z_2))
-
-    def Constraint_Condition_Operation(self,
-
-                                       BETA_1=None,
-                                       BETA_2=None,
-                                       F_H_1=None,
-                                       F_H_2=None
-                                       ):
+    def Passenger_Waiting_Time(self,
+                               ):
         """
             Desc:
-            在满足乘客出行需求的情况下，城市轨道交通还应关注服务水平的提高，列车过度拥挤会影响乘客乘坐的舒适性。
-            为保证乘客乘坐的舒适性，对任意区间K的满载率αk必须小于满载率上限η，约束条件1为：
-
-            当输入参数为
-                BETA:
-                    1.最大满载率的要求
-                    BETA_1  = BETA_1
-                    BETA_2 = BETA_1
-                    2.最大满载率的要求
-                    BETA_1  = BETA_2
-                    BETA_2 = BETA_2_1
+                对乘客出行时间 进行分析
+                Z1 = CW + CV + CT
+            CW :计算方式
+            0< x <8 # 0到X的 8的随机
         """
+        CW1 = (self.h1 / 2) * (np.sum(np.array(self.P.iloc[0:self.x, 0:12]))) + (
+            ((self.h1 + self.h2) / 2) - self.G) * np.sum(np.array(self.P.iloc[0:self.x, 12:]))
+        CW2 = (((self.h1 + self.h2) / 2) - self.G) * np.sum(np.array(self.P.iloc[self.x:8, self.x:8])) + (self.h1 / 2) * np.sum(
+            np.array(self.P.iloc[self.x:8, 8:12])) + (self.h2 / 2) * np.sum(np.array(self.P.iloc[self.x:8, 12:]))
+        CW3 = (self.h1 / 2) * np.sum(np.array(self.P.iloc[8:12, 8:12]))
+        CW4 = (self.h2 / 2) * np.sum(np.array(self.P.iloc[12:, 12:]))
+        CW = CW1 + CW2 + CW3 + CW4
+        print('乘客候车时间CW')
+        print('\tCW:' + str(CW))
+        return CW
 
-        # 对任意区间K的满载率αk必须小于满载率上限η
+    def Passenger_Travel_Time(self,):
+        """
+        K: 非换成节点
+        X: 换成节点
+        当8<=K<=12:
+            Desc:
+                乘客乘车时间CV
+                CV = CVR + ST
+        """
+        # 乘客乘车时间由途中纯运行时间CVR
+        CVR = np.sum(np.array(self.P) * np.array(self.Tij))
 
-        AK = ((np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_1) / (F_H_1 * self.C_Z)) + (
-            np.array(self.Train_Values_of_Float)[:, 2:3] * BETA_2 / (F_H_2 * self.C_Z))
-        print('最大满载率')
-        print(str(AK))
+        D = 1.53
+        V = 4  # 列车编组量数
+        N_V = 4  # 列车每节车厢门数
+        ST_0 = 17  # 开门时间
 
-        # 在城市轨道交通中，两列前后追踪运行的列车，运行途中相互不干扰的最小时间间隔称作最小追踪间隔，是决定城市轨道交通线路能力的重要因素之一。
-        # 对于Y型线路来说，当支线与主线直通运营时，约束条件２为：
-        # T = 3600
-        # fn<= T/1min
+        # ST列车在车站停留时间
+        # 交路1的每列列车在车站K的停站时间——1
+        # ST_0列车在车站开关门时间
 
-        # 当支线独立运营时，约束条件2为：
-        # f1 <= T/1min
-        # f2 <= T/1min
+        ST_H_K = pd.DataFrame((np.array(self.ak) * D) /
+                              (V * N_V * self.FH) + ST_0)
+        ST_K = ((np.array(self.Train_Values_of_Float))) * ST_H_K
 
-        # 满足折返站折返能力
-        # 列车折返车站的折返能力是全线线路通过能力的重要影响因素，中间折返站的折返能力通常会成为整条线路通过能力的瓶颈。
-        # 故每条交路的发车频率要与其两端的折返站的折返能力相适应。约束条件3为：
-        # Fh <= T/t折
+        ST_K = np.sum(ST_K)
+        # ST列车在车站停留时间
+        ST = sum(ST_K)
+        # 乘客候车时间CW, 乘客在车时间CV，乘客换乘时间CT
+        CV = CVR + ST
+        print('乘客乘车时间CV')
+        print("\tCVR:" + str(CVR))
+        print("\tST:" + str(ST))
+        print("\tCV:" + str(CV))
+        return CV, CVR
+
+    def Passenger_Transfer_Time(self):
+        """
+        Desc:
+            乘客在站台的换乘时间CT
+        """
+        # 乘客在站台的换乘时间CT
+        Time = (3600 / (2 * self.f2)) + self.T0
+        Train_time_cros = pd.DataFrame(np.zeros(shape=(18, 18)))
+        Train_time_cros.iloc[:self.x,
+                             11:] = Train_time_cros.iloc[:self.x,
+                                                         11:].replace(0,
+                                                                      Time)
+        CT = np.sum(np.array(Train_time_cros) * np.array(self.P))
+        print('乘客在站台的换乘时间CT')
+        print('CT:' + str(CT))
+        return CT
+
+    def The_Train_Goes_Miles(self,):
+        L_1 = 48657
+        L_1_time = self.f1 * L_1
+        print('列车长度L1的时间')
+        print("L_1:" + str(L_1_time))
+        if 0 <= self.x and self.x <= 7:
+            pass
+        else:
+            return u'x被限制在0-7之间！！！'
+
+        L_2 = self.The_Train_Miles.iloc[self.x:6, 3:4].sum().values[0] \
+            + self.The_Train_Miles.iloc[11:17, 3:4].sum().values[0]
+        print('列车长度L2')
+        print('L_2:' + str(L_2))
+        print('列车长度L2的时间')
+        L_2_time = self.f2 * L_2
+        print("L_2:" + str(L_2_time))
+        Z2 = L_1_time + L_2_time
+        print('列车出行时间Z2')
+        print("Z2:" + str(Z2))
+        return L_1, L_2, L_1_time, L_2_time, Z2
+
+    def Load_Factor(self):
+        if self.K < self.x:
+            self.type = 0
+
+        elif 8 <= self.K and self.K <= 12:
+            self.type = 0
+
+        elif 12 < self.K and self.K <= 18:
+            self.type = 2
+        elif self.x <= self.K <= 7:
+            self.type = 1
+
+        if self.type == 0:
+            _temp = (
+                (self.Train_Values_of_Float.iloc[self.K - 1]) / (self.f1 * self.C_Z))
+            print(_temp.values[0])
+        if self.type == 1:
+            _temp = ((self.Train_Values_of_Float.iloc[self.K - 1]) / (self.f1 * self.C_Z)) + (
+                (self.Train_Values_of_Float.iloc[self.K - 1]) / (self.f2 * self.C_Z))
+            print(_temp.values[0])
+        if self.type == 2:
+            _temp = (
+                (self.Train_Values_of_Float.iloc[self.K - 1]) / (self.f2 * self.C_Z))
+            print(_temp.values[0])
+
+        _temp = _temp.values[0]
+        astrict = self.f1 * self.C_Z * 0.12
+
+        return _temp
+
+    def All_Return(self):
+        CW = self.Passenger_Waiting_Time()
+        CV, CVR = self.Passenger_Travel_Time()
+        CT = self.Passenger_Transfer_Time()
+        L_1, L_2, L_1_time, L_2_time, Z2 = self.The_Train_Goes_Miles()
+        load = self.Load_Factor()
+        return CW, CV, CVR, CT, L_1, L_2, L_1_time, L_2_time, Z2, load
+
+
+if __name__ == '__main__':
+    from Train_Operation_Model_New import Train_Model
+    M = Train_Model(
+        x=6,
+        f1=5,
+        f2=5,
+        G=0.05,
+        K=13
+    )
+    # M.All_Return()
+    M.Load_Factor()
+    # M.Passenger_Waiting_Time()
+#     M.Passenger_Travel_Time()
+#     M.Passenger_Transfer_Time()
+#     M.The_Train_Goes_Miles()
