@@ -3,7 +3,7 @@
 # @Time    : 2019/4/8 15:02
 # @Author  : Noel
 # @Site    :
-# @File    : Train_Operation_Model_New.py
+# @File    : Train_Operation_Model.py
 # @Software: PyCharm
 
 import os
@@ -20,7 +20,6 @@ else:
     # data_file_path = 'C:/Users/Noel/OneDrive/文档/李涵论文/列车运行数据.xlsx'
     # data_file_path = 'D:/OneDrive/文档/李涵论文/列车运行数据.xlsx'
     data_file_path = '列车运行数据.xlsx'
-
 
 class Train_Model():
     def __init__(self,
@@ -235,7 +234,7 @@ class Train_Model():
 
 
 if __name__ == '__main__':
-    from Train_Operation_Model_New import Train_Model
+    from Train_Operation_Model import Train_Model
     M = Train_Model(
         x=6,
         f1=5,
